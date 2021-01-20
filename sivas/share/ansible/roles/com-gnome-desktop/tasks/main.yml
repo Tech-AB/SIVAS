@@ -1,0 +1,18 @@
+---
+- name: Common | install basic packages
+  package: name={{item}} state=present
+  with_items:
+    - ubuntu-gnome-desktop
+
+
+#- name: Common | install basic packages
+#  package: name={{item}} state=present
+#  with_items:
+#    - ubuntu-gnome-desktop
+#    - lightdm
+
+#- name: Make sure a service is running
+#  systemd:
+#    state: restarted
+#    name: lightdm
+#    enabled: yes

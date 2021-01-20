@@ -1,0 +1,76 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+### ----------------------------------------------------------------------------------------------------------------
+
+###
+# IP & Credentials - Put in your Remote IP and your Remote Server Password
+###
+
+REMOTE_SERVER_IP = "<Remote-Server-IP>"
+REMOTE_SERVER_PASSWORD= "<Remote-Server-Password>"
+
+### ----------------------------------------------------------------------------------------------------------------
+
+Vagrant.configure("2") do |config|
+
+  ##
+  # Configure VM
+  ##
+  config.vm.box = "ubuntu/bionic64"
+  config.vm.hostname = "SIVAS"
+  ###
+  # Vagrant Disk Size Plugin has to be installed
+  ###
+  #config.disksize.size = "500GB"
+
+  config.vm.provider "virtualbox" do |v|
+     v.customize [
+                        "modifyvm", :id,
+                        "--memory", "6096",
+						            "--vram", "32",
+                        "--clipboard-mode", "bidirectional",
+                        "--draganddrop", "bidirectional"
+                 ]
+	 v.gui = true
+  end
+  
+  ##
+  # Shared Folder is on the Host the Vagrant Folder where the VagrantFile is located. In the Guest it is /vagrant from the root file system.
+  ## 
+  config.vm.synced_folder "share", "/vagrant", owner: "vagrant",
+    group: "vagrant", mount_options: ["uid=1234", "gid=1234"]
+
+  ##
+  #Ansible will be automatically installed by Vagrant. After vagrant up. Run vagrant provision to run the ansible playbook.yml
+  ##
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "ansible/playbook.yml"
+    ansible.install_mode = "pip"
+	  ansible.version = "latest"
+  end
+
+  ### ###############################################################################################################################
+  # This Command is triggered from inside the SIVAS Ubuntu Linux OS. You can triggered from your HOST (e.g. WINDOWS)
+  ### ###############################################################################################################################
+
+  ###
+  # Trigger Ansible Playbook with Username and Password
+  ###
+  config.vm.provision "default-ansible-playbook", type: "shell" do |s|
+    s.inline = "ssh-keyscan -H #{REMOTE_SERVER_IP} >> /home/vagrant/.ssh/known_hosts && sudo mkdir -p /root/.ssh && sudo touch /root/.ssh/known_hosts && ssh-keyscan -H #{REMOTE_SERVER_IP} >> /root/.ssh/known_hosts && sudo service ssh restart && sleep 2 && cd /vagrant/default-ansible-playbook && ansible-playbook /vagrant/default-ansible-playbook/playbook-com.yml -i /vagrant/default-ansible-playbook/hosts -l default --extra-vars 'ansible_user=<user> ansible_password=#{REMOTE_SERVER_PASSWORD} ansible_become_pass=#{REMOTE_SERVER_PASSWORD}'"
+  end
+
+  ### Run with: vagrant provision --provision-with default-ansible-playbook
+
+  ###
+  # Example trigger Ansible Playbook with Username and Keyfile
+  ###
+
+  config.vm.provision "default-ansible-playbook_keyfile", type: "shell" do |s|
+    s.inline = "ssh-keyscan -H #{REMOTE_SERVER_IP} >> /home/vagrant/.ssh/known_hosts && sudo mkdir -p /root/.ssh && touch /root/.ssh/known_hosts && ssh-keyscan -H #{REMOTE_SERVER_IP} >> /root/.ssh/known_hosts sudo service ssh restart && sleep 2 && cd /vagrant/default-ansible-playbook && ansible-playbook /vagrant/default-ansible-playbook/playbook-app-specific.yml -i /vagrant/default-ansible-playbook/hosts -l default --extra-vars 'ansible_user=<user> ansible_password=<user-sudo-password> ansible_become_pass=<user-sudo-password>'"
+  end
+
+  ### Run with: vagrant provision --provision-with default-ansible-playbook_keyfile
+
+end

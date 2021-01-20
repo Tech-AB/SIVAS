@@ -1,0 +1,17 @@
+---
+- name: COMMOIN | Install basic packages
+  package: name={{ item }} state=present
+  with_items:
+    - virtualbox-guest-x11
+    - virtualbox-guest-utils
+    - virtualbox-guest-dkms
+    - virtualbox-guest-additions-iso
+
+- name: Ensure group vboxusers exists
+  group:
+    name: vboxusers
+    state: present
+
+- user:
+    name: vagrant
+    group: vboxusers

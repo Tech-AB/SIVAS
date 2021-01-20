@@ -1,0 +1,12 @@
+---
+- name: COMMOIN | Install basic packages
+  package: name={{ item }} state=present
+  with_items:
+    - gconf2
+    
+- name: Change Keyboard Layout
+  gconftool2:
+    key: "/desktop/gnome/input-sources/sources"
+    value_type: "string"
+    value: "[('xkb', 'de')]"
+    state: present

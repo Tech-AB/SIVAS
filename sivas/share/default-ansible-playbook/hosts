@@ -1,0 +1,2 @@
+[default]
+<ip_to_remote_server> ansible_ssh_private_key_file=/vagrant/ssh_keys/private/id_rsa

@@ -1,0 +1,14 @@
+---
+- name: SIVAS - Simple Vagrant Ansible Starter
+  hosts: all
+  become: yes
+  gather_facts: yes
+  vars_files:
+    - "group_vars/all"
+  roles:
+    - com-autoremove-update-upgrade
+    - com-keyboard-configuration
+    - com-gnome-desktop
+    - com-base-keyboard-configuration-gnome
+    - com-base-vbox-guest-additions
+    - com-packages
